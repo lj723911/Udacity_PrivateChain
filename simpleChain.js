@@ -27,8 +27,6 @@ class Block{
 |  Class with a constructor for new blockchain 		|
 |  ================================================*/
 
-let validateBlocks = [];
-
 class Blockchain{
   constructor(){
 		// this.chain = the height of latest block
