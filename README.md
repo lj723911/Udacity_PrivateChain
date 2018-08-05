@@ -3,28 +3,9 @@
 Blockchain has the potential to change the way that the world approaches data. Develop Blockchain skills by understanding the data model behind Blockchain by developing your own simplified private blockchain.
 
 ## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
-### Prerequisites
-
-Installing Node and NPM is pretty straightforward using the installer package available from the (Node.js® web site)[https://nodejs.org/en/].
-
-### Configuring your project
-
-- Use NPM to initialize your project and create package.json to store project dependencies.
 ```
-npm init
+npm install
 ```
-- Install crypto-js with --save flag to save dependency to our package.json file
-```
-npm install crypto-js --save
-```
-- Install level with --save flag
-```
-npm install level --save
-```
-
 ## Testing
 
 To test code:
@@ -48,14 +29,7 @@ for (var i = 0; i <= 10; i++) {
 ```
 blockchain.validateChain();
 ```
-7: Induce errors by changing block data
-```
-let inducedErrorBlocks = [2,4,7];
-for (var i = 0; i < inducedErrorBlocks.length; i++) {
-  blockchain.chain[inducedErrorBlocks[i]].data='induced chain error';
-}
-```
-8: Validate blockchain. The chain should now fail with blocks 2,4, and 7.
+7: Validate blockchain. The chain should now fail with blocks 2,4, and 7.
 ```
 blockchain.validateChain();
 ```
