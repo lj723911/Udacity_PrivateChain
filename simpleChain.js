@@ -38,7 +38,7 @@ class Blockchain{
 		  })
 		  .on('close', function () {
 				if (keyNum === 0){
-					console.log('no block exists')
+					console.log('no block exists, creating a genesis block...')
 					// creat genesis block
 					let time = new Date().getTime().toString().slice(0,-3);
 					let newBlock = new Block("First block in the chain - Genesis block");
@@ -62,10 +62,9 @@ class Blockchain{
   addBlock(newBlock){
     // UTC timestamp
     newBlock.time = new Date().getTime().toString().slice(0,-3);
-
 		db.get('height', function(err, value){
 			newBlock.height = parseInt(value) + 1;
-			db.get(newBlock.height - 1, function(err,value){
+			db.get(newBlock.height-1, function(err, value){
 				let obj = JSON.parse(value)
 				// previous block hash
 				newBlock.previousBlockHash = obj.hash
@@ -180,7 +179,3 @@ class Blockchain{
 }
 
 let blockchain = new Blockchain();
-// blockchain.addBlock(new Block());
-// blockchain.addBlock(new Block());
-// blockchain.addBlock(new Block());
-// blockchain.addBlock(new Block());
