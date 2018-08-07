@@ -163,10 +163,10 @@ class Blockchain{
 		})
 	}
 
-	// this method is for text error
+	// this method is for text error, once changed it would never be fixed
 	changeData(key){
-		db.get(key, function(err,value){
-				let obj = JSON.parse(value)
+		db.get(key, function(err, value){
+				let obj = JSON.parse(value);
 				// previous block hash
 				obj.time = new Date().getTime().toString().slice(0,-3);
 				// Block hash with SHA256 using newBlock and converting to a string
