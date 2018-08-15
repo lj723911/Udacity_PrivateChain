@@ -7,20 +7,7 @@ const level = require('level');
 const chainDB = './chaindata';
 const db = level(chainDB);
 
-/* ===== Block Class ==============================
-|  Class with a constructor for block 			   |
-|  ===============================================*/
-
-class Block{
-	constructor(data){
-     this.hash = "",
-     this.height = 0,
-     this.body = data,
-     this.time = 0,
-     this.previousBlockHash = ""
-    }
-}
-
+let Block = require("./block").block
 /* ===== Blockchain Class ==========================
 |  Class with a constructor for new blockchain 		|
 |  ================================================*/
@@ -62,9 +49,9 @@ class Blockchain{
   addBlock(newBlock){
     // UTC timestamp
     newBlock.time = new Date().getTime().toString().slice(0,-3);
-		db.get('height', function(err, value){
+		return db.get('height').then(function(value){
 			newBlock.height = parseInt(value) + 1;
-			db.get(newBlock.height-1, function(err, value){
+			return db.get(newBlock.height-1).then(function(value){
 				let obj = JSON.parse(value)
 				// previous block hash
 				newBlock.previousBlockHash = obj.hash
@@ -77,8 +64,13 @@ class Blockchain{
 				db.put('height', newBlock.height, function(err){
 					if (err) return console.log('Block ' + key + ' submission failed', err);
 				})
-			})
-		})
+        return newBlock;
+			}).catch(function(err){
+        console.log('Not found!', err);
+      })
+		}).catch(function(err){
+      console.log('Not found!', err);
+    })
   }
 
   // Get block height
@@ -161,21 +153,6 @@ class Blockchain{
 			}
 		})
 	}
-
-	// this method is for text error, once changed it would never be fixed
-	changeData(key){
-		db.get(key, function(err, value){
-				let obj = JSON.parse(value);
-				// previous block hash
-				obj.time = new Date().getTime().toString().slice(0,-3);
-				// Block hash with SHA256 using newBlock and converting to a string
-				obj.hash = SHA256(JSON.stringify(obj)).toString();
-				// Adding block object to chain
-				db.put(key, JSON.stringify(obj), function(err){
-					if (err) return console.log('Block ' + key + ' submission failed', err);
-				})
-			})
-	}
 }
 
-let blockchain = new Blockchain();
+exports.blockchain = Blockchain;

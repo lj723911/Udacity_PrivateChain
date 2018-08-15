@@ -6,30 +6,60 @@ Blockchain has the potential to change the way that the world approaches data. D
 ```
 npm install
 ```
-## Testing
+**Start server**
 
-To test code:
-1: Open a command prompt or shell terminal after install node.js.
-2: Enter a node session, also known as REPL (Read-Evaluate-Print-Loop).
 ```
-node
+node index.js
 ```
-3: Copy and paste your code into your node session
-4: Instantiate blockchain with blockchain variable
+
+## HTTP API
+
+**Get block by height**
+
 ```
-let blockchain = new Blockchain();
+curl http://localhost:8000/block/{Height}
 ```
-5: Generate 10 blocks using a for loop
+
+**Create block**
+
 ```
-for (var i = 0; i <= 10; i++) {
-  blockchain.addBlock(new Block("test data "+i));
-}
+curl -X "POST" "http://localhost:8000/block" -H 'Content-Type: application/json' -d $'{"body":"block body contents"}'
 ```
-6: Validate blockchain
+
+## Methods
+
+**1: addBlock()**
+
+Method add a new block into blockchain
+
 ```
-blockchain.validateChain();
+blockchain.addBlock()
 ```
-7: Validate blockchain. The chain should now fail with blocks 2,4, and 7.
+**2: getBlockHeight()**
+
+Method get current block heigth
+
+```
+blockchain.getBlockHeight()
+```
+**3: getBlock()**
+
+Method get block by block height
+
+```
+blockchain.getBlock({HEIGHT})
+```
+**4: validateBlock()**
+
+Method validate a block by block heigth
+
+```
+blockchain.validateBlock({HEIGHT});
+```
+**5: validateChain()**
+
+Method validate blockchain 
+
 ```
 blockchain.validateChain();
 ```
