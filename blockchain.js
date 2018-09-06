@@ -28,7 +28,7 @@ class Blockchain{
 					console.log('no block exists, creating a genesis block...')
 					// creat genesis block
 					let time = new Date().getTime().toString().slice(0,-3);
-					let newBlock = new Block("First block in the chain - Genesis block");
+					let newBlock = new Block({"address":"","star":"First block in the chain - Genesis block"});
 					newBlock.height = 0;
 					newBlock.time = time;
 					newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
@@ -83,7 +83,7 @@ class Blockchain{
 		})
   }
 
-  // get block
+  // get block by HEIGHT
   getBlock(blockHeight){
 	  return	db.get(blockHeight).then(function(value){
 			console.log('Block #' + blockHeight + ':\n' + value + '\n')
@@ -92,6 +92,52 @@ class Blockchain{
 		}).catch(function(err){
 			console.log('Not found!', err);
 		})
+  }
+
+  // get block by hash
+  getBlockByHash(hash){
+    return new Promise((resolve, reject) => {
+      let block;
+      db.createReadStream()
+        .on("data", (data) => {
+          if(data.key != 'height'){
+            let value = JSON.parse(data.value);
+            let blockHash = value.hash;
+            if (blockHash == hash) {
+              block = value;
+            }
+          }
+        })
+        .on("error", (err) => {
+          reject(err);
+        })
+        .on("close", ()=>{
+          resolve(block); // 如果没有满足条件的，则block值为undefined，在下一步就会抛出错误
+        })
+    })
+  }
+
+  // get blocks by address
+  getBlocksByAddress(addr) {
+    return new Promise((resolve, reject) => {
+      let blocks = [];
+      db.createReadStream()
+        .on("data", (data) => {
+          if(data.key != 'height'){
+            let value = JSON.parse(data.value);
+            let blockAddress = value.body.address;
+            if (blockAddress == addr) {
+              blocks.push(value);
+            }
+          }
+        })
+        .on("error", (err) => {
+          reject(err);
+        })
+        .on("close", ()=>{
+          resolve(blocks); // 如果没有满足条件的，则blocks值为[]
+        })
+    })
   }
 
   // validate block
@@ -151,6 +197,8 @@ class Blockchain{
 					}
 				})
 			}
+		}).catch(function(err){
+			console.log('Not found!', err);
 		})
 	}
 }
