@@ -13,21 +13,21 @@ const app = express()
 app.use(bodyParser.json());
 
 // convert hex & String
-let strTohex = function (str) {
-  let hex = "";
-  for (let i = 0; i < str.length; i++) {
-    hex += "" + str.charCodeAt(i).toString(16);
-  }
-  return hex;
-}
-
-let hexTostring = function(hex){
-  let string = "";
-  for (let i = 0; i < hex.length; i += 2) {
-    string += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-  }
-  return string;
-}
+// let strTohex = function (str) {
+//   let hex = "";
+//   for (let i = 0; i < str.length; i++) {
+//     hex += "" + str.charCodeAt(i).toString(16);
+//   }
+//   return hex;
+// }
+//
+// let hexTostring = function(hex){
+//   let string = "";
+//   for (let i = 0; i < hex.length; i += 2) {
+//     string += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+//   }
+//   return string;
+// }
 
 // story requests in app locals
 app.locals.validateReq = {};
@@ -109,7 +109,7 @@ app.post('/block', (req, res) => {
 
   if (validateAddress[address]) {
     let { ra, dec } = star;
-    let story = strTohex(star.story);
+    let story = Buffer(star.story).toString('hex'); //strTohex(star.story)
     let body = {
       address,
       star:{ra, dec, story}
@@ -132,7 +132,7 @@ app.get('/block/:height', (req, res) => {
   let { height } = req.params;
   blockchain.getBlock(height).then((value) => {
     if(value.body.star){
-      value.body.star.storyDecoded = hexTostring(value.body.star.story);
+      value.body.star.storyDecoded = Buffer(value.body.star.story, 'hex').toString(); //hexTostring(value.body.star.story)
       res.send(value)
     } else {
       res.send(value)
