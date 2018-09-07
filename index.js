@@ -56,9 +56,15 @@ app.post('/requestValidation',(req,res) => {
    let { address } = req.body;
    let timeStamp =  new Date().getTime().toString().slice(0,-3);
    let message = `${address}:${timeStamp}:starRegistry`;
-   let validationWindow = 300;
 
-   validateReq[address] = [validationWindow, timeStamp]
+   let validationWindow;
+
+   if(validateReq[address]) {
+     validationWindow = validateReq[address][0];
+   } else {
+     validationWindow = 300;
+     validateReq[address] = [validationWindow, timeStamp]
+   }
 
    res.send({
      "address":address,
@@ -122,7 +128,9 @@ app.post('/block', (req, res) => {
           res.send(value)
         })
       })
-    })
+    });
+    // 删除认证的账号
+    delete validateAddress[address];
   } else {
     res.send(`Address ${address} not found in validated addresses`)
   }
@@ -131,7 +139,7 @@ app.post('/block', (req, res) => {
 app.get('/block/:height', (req, res) => {
   let { height } = req.params;
   blockchain.getBlock(height).then((value) => {
-    if(value.body.star){
+    if(value.height != 0){
       value.body.star.storyDecoded = Buffer(value.body.star.story, 'hex').toString(); //hexTostring(value.body.star.story)
       res.send(value)
     } else {
