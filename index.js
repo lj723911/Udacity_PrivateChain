@@ -54,22 +54,22 @@ count(validateReq);
 app.post('/requestValidation',(req,res) => {
    let { validateReq } = req.app.locals;
    let { address } = req.body;
-   let timeStamp =  new Date().getTime().toString().slice(0,-3);
-   let message = `${address}:${timeStamp}:starRegistry`;
-
    let validationWindow;
+   let timeStamp;
 
    if(validateReq[address]) {
      validationWindow = validateReq[address][0];
+     timeStamp = validateReq[address][1];
    } else {
      validationWindow = 300;
+     timeStamp =  new Date().getTime().toString().slice(0,-3);
      validateReq[address] = [validationWindow, timeStamp]
    }
 
    res.send({
      "address":address,
      "requestTimeStamp":timeStamp,
-     "message":message,
+     "message":`${address}:${timeStamp}:starRegistry`,
      "validationWindow":validationWindow
    })
 
@@ -112,27 +112,32 @@ app.post('/message-signature/validate', (req, res) => {
 app.post('/block', (req, res) => {
   let { address, star } = req.body;
   let { validateAddress } = req.app.locals;
+  let reg = /[\x00-\xff]+/g;
+  if(star && star.ra && star.dec && reg.test(star.story) && Buffer.byteLength(star.story) <= 500) {
+    if (validateAddress[address]) {
+      let { ra, dec } = star;
+      let story = Buffer(star.story).toString('hex'); //strTohex(star.story)
+      let body = {
+        address,
+        star:{ra, dec, story}
+      }
 
-  if (validateAddress[address]) {
-    let { ra, dec } = star;
-    let story = Buffer(star.story).toString('hex'); //strTohex(star.story)
-    let body = {
-      address,
-      star:{ra, dec, story}
-    }
-
-    let newBlock = new Block(body)
-    blockchain.addBlock(newBlock).then(()=>{
-      blockchain.getBlockHeight().then((value) => {
-        blockchain.getBlock(value).then((value) => {
-          res.send(value)
+      let newBlock = new Block(body)
+      blockchain.addBlock(newBlock).then(()=>{
+        blockchain.getBlockHeight().then((value) => {
+          blockchain.getBlock(value).then((value) => {
+            res.send(value)
+          })
         })
-      })
-    });
-    // 删除认证的账号
-    delete validateAddress[address];
+      });
+      // 删除认证的账号
+      delete validateAddress[address];
+      delete validateReq[address];
+    } else {
+      res.send(`Address ${address} not found in validated addresses`)
+    }
   } else {
-    res.send(`Address ${address} not found in validated addresses`)
+    res.send('incorret star contents')
   }
 })
 
@@ -155,7 +160,7 @@ app.get('/stars/:param', (req, res) => {
       let hash = param.substr(5, param.length);
       blockchain.getBlockByHash(hash).then((value) => {
         if(value.body.star){
-          value.body.star.storyDecoded = hexTostring(value.body.star.story);
+          value.body.star.storyDecoded = Buffer(value.body.star.story, 'hex').toString();
           res.send(value)
         } else {
           res.send(value)
@@ -167,7 +172,7 @@ app.get('/stars/:param', (req, res) => {
       blockchain.getBlocksByAddress(address).then((value) => {
         if (value.length == 0) throw new Error('none') // 如果返回值为空，则抛出错误
         value.forEach(item => {
-          item.body.star.storyDecoded = hexTostring(item.body.star.story);
+          item.body.star.storyDecoded = Buffer(item.body.star.story, 'hex').toString();
         })
         res.send(value);
       }).catch(err => {res.send( `${address} has no stars in blockchain` )})
